@@ -326,7 +326,110 @@ def main():
     rows += [["Call", c, SITE["phone_display"], "Pays : France", "Rapports d'appels : activés", "Conversion : appel >= 60 s"] for c in (C1, C2)]
     w("6-composants-extensions.csv", ["Type", "Campaign", "Texte", "Ligne 1", "Ligne 2", "URL / Option"], rows)
 
+    write_xlsx(groups, n_kw)
     print("%d groupes d'annonces, %d mots-clés, %d négatifs : OK (limites de caractères vérifiées)" % (len(groups), n_kw, len(NEGATIVES)))
+
+
+def write_xlsx(groups, n_kw):
+    """Classeur Excel lisible : un onglet par élément de la campagne."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Font, PatternFill
+    from openpyxl.utils import get_column_letter
+
+    head_fill = PatternFill("solid", fgColor="1A2E2A")
+    head_font = Font(bold=True, color="FFFFFF")
+    blue = PatternFill("solid", fgColor="EFF6FF")
+    wb = Workbook()
+
+    def sheet(title, header, rows, widths=None, first=False):
+        ws = wb.active if first else wb.create_sheet()
+        ws.title = title
+        ws.append(header)
+        for r in rows:
+            ws.append(r)
+        for c in ws[1]:
+            c.fill, c.font = head_fill, head_font
+            c.alignment = Alignment(vertical="center", wrap_text=True)
+        ws.freeze_panes = "A2"
+        ws.auto_filter.ref = ws.dimensions
+        for i, wdt in enumerate(widths or [], 1):
+            ws.column_dimensions[get_column_letter(i)].width = wdt
+        return ws
+
+    # Résumé
+    ws = sheet("Résumé", ["Élément", "Valeur"], [], [38, 90], first=True)
+    budgets = {C1: 50, C2: 20}
+    rows = [
+        ("Compte", "Artisans France Plomberie – " + SITE["base_url"]),
+        ("Stratégie d'enchères", "CPC manuel (sans requête large)"),
+        ("Réseaux", "Réseau de Recherche Google uniquement (décocher Partenaires et Display)"),
+        ("Zone", "Toulouse + rayon de 25 km – option « Présence » uniquement"),
+        ("Langue", "Français"),
+        ("Calendrier", "24h/24, 7j/7"),
+        ("Ajustements appareils", "Mobile +20 %, Ordinateur –20 %, Tablette –30 %"),
+        ("Ajustements horaires", "19h–8h +15 %, samedi et dimanche +10 %"),
+        ("Campagne 1", "%s – budget %d €/jour – %d groupes" % (C1, budgets[C1], sum(1 for g in groups if g[0] == C1))),
+        ("Campagne 2", "%s – budget %d €/jour – %d groupes" % (C2, budgets[C2], sum(1 for g in groups if g[0] == C2))),
+        ("Mots-clés", "%d (exact + expression)" % n_kw),
+        ("Mots-clés négatifs", "%d par campagne" % len(NEGATIVES)),
+        ("Conversions à suivre", "Appel depuis l'annonce ≥ 60 s · Clic sur le numéro du site · Formulaire de devis envoyé"),
+        ("Téléphone (extension d'appel)", SITE["phone_display"]),
+        ("Important", "Les enchères sont des points de départ : à vérifier dans le Planificateur de mots clés puis à ajuster après 7 à 14 jours."),
+    ]
+    for r in rows:
+        ws.append(r)
+    for row in ws.iter_rows(min_row=2):
+        row[0].font = Font(bold=True)
+        row[1].alignment = Alignment(wrap_text=True, vertical="top")
+
+    # Groupes d'annonces
+    sheet("Groupes d'annonces", ["Campagne", "Groupe d'annonces", "Enchère exacte (€)", "Enchère expression (€)", "Nb mots-clés", "Page de destination"],
+          [[g[0], g[1], g[3], g[4] or "–", len(g[5]), BASE + g[2]] for g in groups], [36, 34, 18, 20, 13, 62])
+
+    # Mots-clés
+    rows = []
+    for camp, name, url, bex, bph, kws, *_ in groups:
+        for k in kws:
+            rows.append([camp, name, k, "Exact", "[%s]" % k, bex, BASE + url])
+            if bph:
+                rows.append([camp, name, k, "Expression", '"%s"' % k, bph, BASE + url])
+    ws = sheet("Mots-clés", ["Campagne", "Groupe d'annonces", "Mot-clé", "Correspondance", "Format Google Ads", "CPC max (€)", "URL finale"], rows, [34, 30, 44, 15, 46, 12, 60])
+    for c in ws["F"][1:]:
+        c.number_format = '0.00 "€"'
+
+    # Annonces : une ligne par élément avec nombre de caractères
+    rows = []
+    for camp, name, url, bex, bph, kws, heads, descs, p1, p2 in groups:
+        for i, h in enumerate(heads, 1):
+            rows.append([camp, name, "Titre %d%s" % (i, " (épinglé position 1)" if i == 1 else ""), h, len(h), 30])
+        for i, d in enumerate(descs, 1):
+            rows.append([camp, name, "Description %d" % i, d, len(d), 90])
+        rows.append([camp, name, "Chemin 1", p1, len(p1), 15])
+        rows.append([camp, name, "Chemin 2", p2, len(p2), 15])
+        rows.append([camp, name, "URL finale", BASE + url, "", ""])
+    ws = sheet("Annonces RSA", ["Campagne", "Groupe d'annonces", "Élément", "Texte", "Caractères", "Limite"], rows, [34, 30, 26, 92, 11, 8])
+    for row in ws.iter_rows(min_row=2):
+        if str(row[2].value).startswith("Description"):
+            for c in row:
+                c.fill = blue
+
+    # Négatifs
+    sheet("Mots-clés négatifs", ["Campagne", "Mot-clé négatif", "Correspondance", "Format Google Ads"],
+          [[c, n, "Expression", '"%s"' % n] for c in (C1, C2) for n in NEGATIVES], [36, 34, 16, 36])
+
+    # Extensions
+    rows = [["Lien annexe", s[0], s[2], s[3], BASE + s[1]] for s in SITELINKS]
+    rows += [["Accroche", t, "", "", ""] for t in CALLOUTS]
+    rows += [["Extrait de site (Services)", v, "", "", ""] for v in SNIPPET_SERVICES]
+    rows += [["Appel", SITE["phone_display"], "Rapports d'appels activés", "Conversion : appel ≥ 60 s", ""]]
+    sheet("Extensions", ["Type", "Texte", "Description 1", "Description 2", "URL"], rows, [26, 30, 30, 30, 62])
+
+    # Format d'import Google Ads Editor (copier-coller)
+    head = ["Campaign", "Ad Group", "Ad type"] + ["Headline %d" % i for i in range(1, 16)] + \
+           ["Description %d" % i for i in range(1, 5)] + ["Path 1", "Path 2", "Final URL"]
+    sheet("Import Editor - RSA", head, [[g[0], g[1], "Responsive search ad"] + g[6] + g[7] + [g[8], g[9], BASE + g[2]] for g in groups])
+
+    wb.save(os.path.join(OUT, "campagne-google-ads-plombier-toulouse.xlsx"))
 
 
 if __name__ == "__main__":
