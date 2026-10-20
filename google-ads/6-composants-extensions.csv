@@ -1,0 +1,41 @@
+﻿Type,Campaign,Texte,Ligne 1,Ligne 2,URL / Option
+Sitelink,Search - Plombier Toulouse - Urgence,Fuite d'eau,Fuite stoppée rapidement,Réparation 24h/24,https://plomberietoulouse.artisansfrance.com/fuite-d-eau-toulouse/
+Sitelink,Search - Plombier Toulouse - Urgence,Recherche de fuite,Détection sans casse,Rapport pour l'assurance,https://plomberietoulouse.artisansfrance.com/recherche-de-fuite-toulouse/
+Sitelink,Search - Plombier Toulouse - Urgence,Débouchage canalisation,"Évier, douche, baignoire",Furet et hydrocurage,https://plomberietoulouse.artisansfrance.com/debouchage-canalisation-toulouse/
+Sitelink,Search - Plombier Toulouse - Urgence,WC bouché,Débouchage de toilettes,Sanibroyeur toutes marques,https://plomberietoulouse.artisansfrance.com/debouchage-wc-toulouse/
+Sitelink,Search - Plombier Toulouse - Urgence,Chauffe-eau en panne,Plus d'eau chaude ?,Toutes marques,https://plomberietoulouse.artisansfrance.com/depannage-chauffe-eau-toulouse/
+Sitelink,Search - Plombier Toulouse - Urgence,Dégât des eaux,Intervention d'urgence,Facture pour l'assurance,https://plomberietoulouse.artisansfrance.com/degat-des-eaux-toulouse/
+Sitelink,Search - Plombier Toulouse - Urgence,Devis gratuit en ligne,Réponse rapide,Sans engagement,https://plomberietoulouse.artisansfrance.com/#contact
+Sitelink,Search - Plombier Toulouse - Urgence,Zones d'intervention,Toulouse et 25 km autour,Tous les quartiers,https://plomberietoulouse.artisansfrance.com/zones-intervention/
+Sitelink,Search - Plombier Communes 25 km,Fuite d'eau,Fuite stoppée rapidement,Réparation 24h/24,https://plomberietoulouse.artisansfrance.com/fuite-d-eau-toulouse/
+Sitelink,Search - Plombier Communes 25 km,Recherche de fuite,Détection sans casse,Rapport pour l'assurance,https://plomberietoulouse.artisansfrance.com/recherche-de-fuite-toulouse/
+Sitelink,Search - Plombier Communes 25 km,Débouchage canalisation,"Évier, douche, baignoire",Furet et hydrocurage,https://plomberietoulouse.artisansfrance.com/debouchage-canalisation-toulouse/
+Sitelink,Search - Plombier Communes 25 km,WC bouché,Débouchage de toilettes,Sanibroyeur toutes marques,https://plomberietoulouse.artisansfrance.com/debouchage-wc-toulouse/
+Sitelink,Search - Plombier Communes 25 km,Chauffe-eau en panne,Plus d'eau chaude ?,Toutes marques,https://plomberietoulouse.artisansfrance.com/depannage-chauffe-eau-toulouse/
+Sitelink,Search - Plombier Communes 25 km,Dégât des eaux,Intervention d'urgence,Facture pour l'assurance,https://plomberietoulouse.artisansfrance.com/degat-des-eaux-toulouse/
+Sitelink,Search - Plombier Communes 25 km,Devis gratuit en ligne,Réponse rapide,Sans engagement,https://plomberietoulouse.artisansfrance.com/#contact
+Sitelink,Search - Plombier Communes 25 km,Zones d'intervention,Toulouse et 25 km autour,Tous les quartiers,https://plomberietoulouse.artisansfrance.com/zones-intervention/
+Callout,Search - Plombier Toulouse - Urgence,Disponible 24h/24 7j/7,,,
+Callout,Search - Plombier Toulouse - Urgence,Devis Avant Travaux,,,
+Callout,Search - Plombier Toulouse - Urgence,Intervention Rapide,,,
+Callout,Search - Plombier Toulouse - Urgence,"Nuit, Week-end, Fériés",,,
+Callout,Search - Plombier Toulouse - Urgence,Toutes Marques,,,
+Callout,Search - Plombier Toulouse - Urgence,Paiement CB Accepté,,,
+Callout,Search - Plombier Toulouse - Urgence,Facture pour l'Assurance,,,
+Callout,Search - Plombier Toulouse - Urgence,Plombiers Qualifiés,,,
+Callout,Search - Plombier Toulouse - Urgence,Détection Sans Casse,,,
+Callout,Search - Plombier Toulouse - Urgence,Toulouse + 25 km,,,
+Callout,Search - Plombier Communes 25 km,Disponible 24h/24 7j/7,,,
+Callout,Search - Plombier Communes 25 km,Devis Avant Travaux,,,
+Callout,Search - Plombier Communes 25 km,Intervention Rapide,,,
+Callout,Search - Plombier Communes 25 km,"Nuit, Week-end, Fériés",,,
+Callout,Search - Plombier Communes 25 km,Toutes Marques,,,
+Callout,Search - Plombier Communes 25 km,Paiement CB Accepté,,,
+Callout,Search - Plombier Communes 25 km,Facture pour l'Assurance,,,
+Callout,Search - Plombier Communes 25 km,Plombiers Qualifiés,,,
+Callout,Search - Plombier Communes 25 km,Détection Sans Casse,,,
+Callout,Search - Plombier Communes 25 km,Toulouse + 25 km,,,
+Structured snippet (Services),Search - Plombier Toulouse - Urgence,Fuite d'eau; Recherche de fuite; Débouchage; WC bouché; Chauffe-eau; Dégât des eaux; Robinetterie,,,
+Structured snippet (Services),Search - Plombier Communes 25 km,Fuite d'eau; Recherche de fuite; Débouchage; WC bouché; Chauffe-eau; Dégât des eaux; Robinetterie,,,
+Call,Search - Plombier Toulouse - Urgence,09 70 70 71 29,Pays : France,Rapports d'appels : activés,Conversion : appel >= 60 s
+Call,Search - Plombier Communes 25 km,09 70 70 71 29,Pays : France,Rapports d'appels : activés,Conversion : appel >= 60 s
