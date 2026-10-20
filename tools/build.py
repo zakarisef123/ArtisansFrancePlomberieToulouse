@@ -131,7 +131,18 @@ HEADER = f"""
             </a>
             <nav class="main-nav" aria-label="Navigation principale">
                 <a href="/">Accueil</a>
-                <a href="/#services">Services</a>
+                <div class="nav-drop">
+                    <a href="/#services">Services</a>
+                    <div class="nav-drop-menu">
+                        <a href="/fuite-d-eau-toulouse/">Réparation de fuite d'eau</a>
+                        <a href="/recherche-de-fuite-toulouse/">Recherche de fuite non destructive</a>
+                        <a href="/debouchage-canalisation-toulouse/">Débouchage de canalisation</a>
+                        <a href="/debouchage-wc-toulouse/">Débouchage de WC</a>
+                        <a href="/depannage-chauffe-eau-toulouse/">Dépannage de chauffe-eau</a>
+                        <a href="/degat-des-eaux-toulouse/">Intervention dégât des eaux</a>
+                        <a href="/reparation-robinet-toulouse/">Réparation de robinetterie</a>
+                    </div>
+                </div>
                 <a href="/zones-intervention/">Zones</a>
                 <a href="#contact">Devis gratuit</a>
             </nav>
@@ -157,6 +168,13 @@ HEADER = f"""
             <nav class="mobile-nav" aria-label="Navigation mobile">
                 <a href="/">Accueil</a>
                 <a href="/#services">Services</a>
+                <a class="sub" href="/fuite-d-eau-toulouse/">Réparation de fuite d'eau</a>
+                <a class="sub" href="/recherche-de-fuite-toulouse/">Recherche de fuite non destructive</a>
+                <a class="sub" href="/debouchage-canalisation-toulouse/">Débouchage de canalisation</a>
+                <a class="sub" href="/debouchage-wc-toulouse/">Débouchage de WC</a>
+                <a class="sub" href="/depannage-chauffe-eau-toulouse/">Dépannage de chauffe-eau</a>
+                <a class="sub" href="/degat-des-eaux-toulouse/">Intervention dégât des eaux</a>
+                <a class="sub" href="/reparation-robinet-toulouse/">Réparation de robinetterie</a>
                 <a href="/zones-intervention/">Zones d'intervention</a>
                 <a href="#contact">Devis gratuit</a>
             </nav>
@@ -366,9 +384,11 @@ def hero(h1, lead, crumbs, points):
 
 
 def aside(img, alt, place):
+    from PIL import Image
+    w, h = Image.open(os.path.join(ROOT, "images", img + ".jpg")).size
     return f"""
                     <aside class="prose-aside">
-                        <img src="/images/{img}.jpg" srcset="/images/{img}.jpg 1x, /images/{img}-hd.jpg 2x" alt="{html.escape(alt)}" width="600" height="600" loading="lazy">
+                        <img src="/images/{img}.jpg" srcset="/images/{img}.jpg 1x, /images/{img}-hd.jpg 2x" alt="{html.escape(alt)}" width="{w}" height="{h}" loading="lazy">
                         <div class="aside-card">
                             <span class="label">Urgence plomberie {html.escape(place)}</span>
                             <a class="tel" href="tel:{TEL}">{TEL_D}</a>
@@ -495,7 +515,7 @@ def build_zones():
     slug = "zones-intervention"
     canonical = url(slug)
     title = "Plombier Toulouse et 25 km autour – Zones d'intervention 24h/24"
-    desc = "Plombier d'urgence 24h/24 à Toulouse (tous quartiers) et dans %d communes à 25 km : Blagnac, Colomiers, Tournefeuille, Balma, Muret, Cugnaux... Appelez le %s." % (len(COMMUNES), TEL_D)
+    desc = "Plombier d'urgence 24h/24 à Toulouse et dans %d communes à 25 km autour : Blagnac, Colomiers, Tournefeuille, Balma, Muret, Cugnaux..." % len(COMMUNES)
     crumbs = [("Accueil", BASE + "/"), ("Zones d'intervention", canonical)]
     serv_links = "".join('<li><a href="%s">%s</a></li>' % (service_href(s["slug"]), (s["label"] + " à Toulouse") if s["slug"] != "plombier" else "Plombier urgence Toulouse") for s in SERVICES)
     services_inline = ", ".join('<a href="%s">%s</a>' % (service_href(s["slug"]), s["name"].lower()) for s in SERVICES if s["slug"] != "plombier")

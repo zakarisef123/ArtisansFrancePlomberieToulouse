@@ -5,6 +5,7 @@ Ce dossier n'est **pas publié** sur le site (bloqué dans `netlify.toml` et `ro
 
 | Fichier | Contenu |
 |---|---|
+| `campagne-google-ads-plombier-toulouse.xlsx` | **Tout en un classeur Excel** : résumé des réglages, groupes, mots-clés, annonces (avec nombre de caractères), négatifs, extensions, onglet d'import Editor |
 | `1-campagnes.csv` | 2 campagnes Search, CPC manuel, budgets |
 | `2-mots-cles.csv` | 933 mots-clés en **exact** et **expression** avec enchère et URL finale |
 | `3-groupes-annonces.csv` | 32 groupes d'annonces et leur enchère par défaut |
