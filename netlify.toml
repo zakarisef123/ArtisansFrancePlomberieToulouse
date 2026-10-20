@@ -1,15 +1,9 @@
 [build]
   publish = "."
 
-# Les outils internes et la campagne Google Ads ne doivent pas être publiés
+# Le générateur du site n'a pas à être publié
 [[redirects]]
   from = "/tools/*"
-  to = "/404.html"
-  status = 404
-  force = true
-
-[[redirects]]
-  from = "/google-ads/*"
   to = "/404.html"
   status = 404
   force = true

@@ -25,7 +25,6 @@ Fichiers SEO : `sitemap.xml` (avec images), `robots.txt` (moteurs et IA autoris�
 
 - Accueil : éditer `index.html` directement.
 - Pages services, zones, légales, sitemap, llms : éditer `tools/site_data.py` (textes, communes, quartiers), puis lancer `python3 tools/build.py`.
-- Campagne Google Ads : éditer `tools/build_ads.py`, puis lancer `python3 tools/build_ads.py`. Voir `google-ads/GUIDE-CAMPAGNE.md`.
 
 ## Pour être premier sur Google : à faire hors du site
 
