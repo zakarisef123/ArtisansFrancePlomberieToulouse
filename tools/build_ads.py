@@ -328,7 +328,215 @@ def main():
 
     write_xlsx(groups, n_kw)
     write_single_import(groups)
+    write_copy_page(groups)
     print("%d groupes d'annonces, %d mots-clés, %d négatifs : OK (limites de caractères vérifiées)" % (len(groups), n_kw, len(NEGATIVES)))
+
+
+def write_copy_page(groups):
+    """Page HTML « copier-coller » : un bouton Copier sur chaque bloc."""
+    import html as H
+    esc = H.escape
+    n = [0]
+
+    def uid():
+        n[0] += 1
+        return "b%d" % n[0]
+
+    def block(label, text, rows=None, mono=True):
+        i = uid()
+        lines = text.count("\n") + 1
+        r = rows or min(max(lines, 1), 12)
+        return ('<div class="blk"><div class="blk-head"><span class="lbl">%s</span>'
+                '<button type="button" class="copy" data-target="%s">Copier</button></div>'
+                '<textarea id="%s" class="%s" rows="%d" readonly spellcheck="false">%s</textarea></div>'
+                % (esc(label), i, i, "mono" if mono else "", r, esc(text)))
+
+    def field(label, text, limit=None):
+        i = uid()
+        cnt = ('<span class="cnt%s">%d/%d</span>' % (" over" if len(text) > limit else "", len(text), limit)) if limit else ""
+        return ('<li class="fld"><span class="fl">%s</span><span class="fv" id="%s">%s</span>%s'
+                '<button type="button" class="copy sm" data-target="%s">Copier</button></li>' % (esc(label), i, esc(text), cnt, i))
+
+    # Fichier Editor complet en texte tabulé (Importer > Coller du texte)
+    import io
+    buf = io.StringIO()
+    with open(os.path.join(OUT, "CREER-LA-CAMPAGNE-import-google-ads-editor.csv"), encoding="utf-8-sig") as f:
+        for r in csv.reader(f):
+            buf.write("\t".join(r) + "\n")
+    tsv = buf.getvalue().rstrip("\n")
+
+    camp_cards = []
+    for camp, budget in ((C1, "50"), (C2, "20")):
+        gs = [g for g in groups if g[0] == camp]
+        settings = "".join([
+            field("Nom de la campagne", camp),
+            field("Budget quotidien (€)", budget),
+            field("Stratégie d'enchères", "CPC manuel"),
+            field("Zone", "Toulouse, France – rayon 25 km"),
+            field("Langue", "Français"),
+        ])
+        ag_html = []
+        for g in gs:
+            _, name, url, bex, bph, kws, heads, descs, p1, p2 = g
+            kw_exact = ["[%s]" % k for k in kws]
+            kw_phrase = ['"%s"' % k for k in kws] if bph else []
+            kw_lines = kw_exact + kw_phrase
+            heads_html = "".join(field("Titre %d%s" % (i, " · épingler en 1" if i == 1 else ""), h, 30) for i, h in enumerate(heads, 1))
+            desc_html = "".join(field("Description %d" % i, d, 90) for i, d in enumerate(descs, 1))
+            bids = "Enchère exacte %.2f € · expression %.2f €" % (bex, bph) if bph else "Enchère %.2f € (exact uniquement)" % bex
+            ag_html.append(
+                '<details class="ag"><summary><span class="agn">%s</span><span class="agm">%d mots-clés · %s</span></summary>'
+                '<div class="ag-body"><ul class="flds">%s%s%s%s%s</ul>%s'
+                '<h4>Annonce responsive : 15 titres</h4><ul class="flds">%s</ul>%s'
+                '<h4>4 descriptions</h4><ul class="flds">%s</ul></div></details>'
+                % (esc(name), len(kw_lines), esc(bids),
+                   field("Nom du groupe", name), field("Enchère par défaut (€)", "%.2f" % bex), field("URL finale", BASE + url),
+                   field("Chemin 1", p1, 15), field("Chemin 2", p2, 15),
+                   block("Mots-clés EXACTS [ ] – %d – enchère %.2f €" % (len(kw_exact), bex), "\n".join(kw_exact)) +
+                   (block('Mots-clés EXPRESSION " " – %d – enchère %.2f €' % (len(kw_phrase), bph), "\n".join(kw_phrase)) if kw_phrase else ""),
+                   heads_html, block("Les 15 titres d'un coup", "\n".join(heads), rows=6, mono=False),
+                   desc_html))
+        camp_cards.append(
+            '<section class="camp"><h3>%s</h3><ul class="flds">%s</ul>%s<h4>Groupes d\'annonces (%d)</h4>%s</section>'
+            % (esc(camp), settings,
+               block("Mots-clés négatifs de la campagne (Mots clés > Mots clés à exclure)", "\n".join('"%s"' % x for x in NEGATIVES), rows=8),
+               len(gs), "".join(ag_html)))
+
+    sitelinks = "".join(
+        '<div class="sl"><ul class="flds">%s%s%s%s</ul></div>' % (field("Texte du lien", t, 25), field("Ligne 1", d1, 35), field("Ligne 2", d2, 35), field("URL finale", BASE + u))
+        for t, u, d1, d2 in SITELINKS)
+
+    page = """<title>Campagne Plombier Toulouse</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Mise en page : une colonne de lecture, des blocs « à copier » en police mono, bouton Copier toujours à droite */
+:root {
+  --bg: #f6f7f6; --panel: #ffffff; --ink: #172723; --muted: #5b6b66; --line: #dfe5e2;
+  --accent: #1f5fe0; --accent-ink: #ffffff; --ok: #157a4a; --warn: #b4321f; --field: #f1f4f2;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1715; --panel: #16211e; --ink: #e5ece9; --muted: #9db0aa; --line: #2a3a35;
+  --accent: #6d9cff; --accent-ink: #0b1220; --ok: #4fc58a; --warn: #ff8a73; --field: #1c2a26; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1715; --panel: #16211e; --ink: #e5ece9; --muted: #9db0aa; --line: #2a3a35;
+  --accent: #6d9cff; --accent-ink: #0b1220; --ok: #4fc58a; --warn: #ff8a73; --field: #1c2a26; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 960px; margin: 0 auto; padding-block: 28px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.1; margin: 0 0 6px; text-wrap: balance; font-weight: 700; }
+h2 { font-size: 1.25rem; margin: 40px 0 12px; text-wrap: balance; }
+h3 { font-size: 1.1rem; margin: 0 0 12px; }
+h4 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 22px 0 8px; font-weight: 600; }
+p { margin: 0 0 10px; max-width: 68ch; }
+.sub { color: var(--muted); margin-bottom: 22px; }
+.steps { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 18px 0 8px; }
+.step { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.step b { display: block; margin-bottom: 4px; }
+.tag { display: inline-block; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ok); margin-bottom: 6px; }
+.camp { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-top: 18px; min-width: 0; }
+.blk { margin: 12px 0; min-width: 0; }
+.blk-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.lbl { font-weight: 600; font-size: .9rem; min-width: 0; }
+textarea { width: 100%; box-sizing: border-box; background: var(--field); color: var(--ink); border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 12px; font: 14px/1.5 var(--sans); resize: vertical; white-space: pre; overflow: auto; }
+textarea.mono { font-family: var(--mono); font-size: 13px; }
+.copy { flex-shrink: 0; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 8px 14px;
+  font: 600 .85rem var(--sans); cursor: pointer; min-width: 84px; }
+.copy.sm { padding: 5px 10px; min-width: 70px; font-size: .78rem; }
+.copy:hover { filter: brightness(1.08); }
+.copy:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.copy.done { background: var(--ok); }
+.flds { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.fld { display: grid; grid-template-columns: 170px minmax(0, 1fr) auto auto; align-items: center; gap: 10px;
+  background: var(--field); border-radius: 8px; padding: 7px 8px 7px 12px; }
+.fl { color: var(--muted); font-size: .82rem; }
+.fv { font-weight: 500; overflow-wrap: anywhere; min-width: 0; }
+.cnt { font: 500 .75rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.cnt.over { color: var(--warn); }
+details.ag { border: 1px solid var(--line); border-radius: 10px; margin: 8px 0; background: var(--panel); }
+details.ag > summary { cursor: pointer; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; list-style: none; }
+details.ag > summary::-webkit-details-marker { display: none; }
+details.ag > summary::before { content: "▸"; color: var(--accent); }
+details.ag[open] > summary::before { content: "▾"; }
+.agn { font-weight: 600; }
+.agm { color: var(--muted); font-size: .85rem; }
+.ag-body { padding: 0 14px 14px; }
+.sl { margin-bottom: 10px; }
+.note { border-left: 3px solid var(--accent); padding: 8px 12px; background: var(--panel); border-radius: 0 8px 8px 0; margin: 12px 0; }
+@media (max-width: 640px) {
+  .fld { grid-template-columns: minmax(0, 1fr) auto; }
+  .fl { grid-column: 1 / -1; }
+  .cnt { justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+<div class="wrap">
+  <h1>Campagne Plombier Toulouse</h1>
+  <p class="sub">Google Ads Search · CPC manuel · Toulouse + 25 km · @@ng@@ groupes d'annonces · @@nk@@ mots-clés</p>
+
+  <h2>Méthode 1 : tout créer en un seul coller (Google Ads Editor)</h2>
+  <div class="steps">
+    <div class="step"><span class="tag">Étape 1</span><b>Copier le bloc ci-dessous</b>Il contient les 2 campagnes, les groupes, les mots-clés avec enchères, les annonces et les négatifs.</div>
+    <div class="step"><span class="tag">Étape 2</span><b>Coller dans Editor</b>Google Ads Editor &gt; Compte &gt; <b style="display:inline">Importer &gt; Coller du texte</b> &gt; coller &gt; Traiter &gt; Conserver.</div>
+    <div class="step"><span class="tag">Étape 3</span><b>Régler et publier</b>Zone Toulouse + 25 km (option « Présence »), ajustements mobile +20 %, puis Publier. Les campagnes arrivent en pause.</div>
+  </div>
+  @@tsv@@
+
+  <h2>Méthode 2 : dans l'interface web Google Ads, champ par champ</h2>
+  <p>Ouvrez un groupe ci-dessous : chaque valeur a son bouton Copier, dans l'ordre où Google Ads la demande. Les mots-clés se collent tous d'un coup dans le champ « Mots clés » : les crochets [ ] donnent l'exact, les guillemets « " " » l'expression.</p>
+  <div class="note"><b>Types de correspondance</b> : <code>[plombier toulouse]</code> = <b>exact</b>, <code>"plombier toulouse"</code> = <b>expression</b>. Collez-les tels quels avec les crochets et les guillemets : Google Ads reconnaît le type tout seul. Les négatifs sont en expression <code>"emploi"</code>. Collez d'abord le bloc exact (enchère par défaut du groupe), puis le bloc expression, et réglez ces mots-clés à l'enchère « expression » indiquée (sélectionner &gt; Modifier &gt; CPC max).</div>
+  @@camps@@
+
+  <h2>Composants (extensions) : à ajouter aux 2 campagnes</h2>
+  <section class="camp">
+    <h3>Liens annexes</h3>@@sitelinks@@
+    @@callouts@@
+    @@snippets@@
+    <ul class="flds">@@call@@</ul>
+  </section>
+</div>
+<script>
+(function () {
+  function flash(btn, ok) {
+    var t = btn.textContent;
+    btn.textContent = ok ? "Copié ✓" : "Sélectionné, faites Ctrl+C";
+    btn.classList.toggle("done", ok);
+    setTimeout(function () { btn.textContent = t; btn.classList.remove("done"); }, 1600);
+  }
+  function selectEl(el) {
+    if (el.select) { el.focus(); el.select(); return; }
+    var r = document.createRange(); r.selectNodeContents(el);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest && e.target.closest(".copy");
+    if (!btn) return;
+    var el = document.getElementById(btn.getAttribute("data-target"));
+    if (!el) return;
+    var text = el.value !== undefined ? el.value : el.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { flash(btn, true); }, function () { selectEl(el); flash(btn, false); });
+    } else { selectEl(el); flash(btn, false); }
+  });
+})();
+</script>
+"""
+    for k, v in {
+        "ng": len(groups), "nk": sum(len(g[5]) * (2 if g[4] else 1) for g in groups),
+        "tsv": block("Texte d'import complet pour Google Ads Editor (%d lignes)" % (tsv.count("\n") + 1), tsv, rows=8),
+        "camps": "".join(camp_cards),
+        "sitelinks": sitelinks,
+        "callouts": block("Accroches (une par ligne)", "\n".join(CALLOUTS), mono=False),
+        "snippets": block("Extrait de site : en-tête « Services » (une valeur par ligne)", "\n".join(SNIPPET_SERVICES), mono=False),
+        "call": field("Extension d'appel : numéro", SITE["phone_display"]),
+    }.items():
+        page = page.replace("@@%s@@" % k, str(v))
+    with open(os.path.join(OUT, "copier-coller.html"), "w", encoding="utf-8") as f:
+        f.write(page)
 
 
 def write_single_import(groups):

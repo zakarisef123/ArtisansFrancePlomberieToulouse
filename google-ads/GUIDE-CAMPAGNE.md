@@ -5,6 +5,7 @@ Ce dossier n'est **pas publié** sur le site (bloqué dans `netlify.toml` et `ro
 
 | Fichier | Contenu |
 |---|---|
+| **`copier-coller.html`** | **Page avec un bouton Copier sur chaque élément** : import Editor en un coller, ou saisie champ par champ dans l'interface web (mots-clés en `[exact]` et `"expression"`) |
 | **`CREER-LA-CAMPAGNE-import-google-ads-editor.csv`** | **Le fichier unique pour créer la campagne** : campagnes, groupes, mots-clés, annonces et négatifs en un seul import |
 | `campagne-google-ads-plombier-toulouse.xlsx` | **Tout en un classeur Excel** : résumé des réglages, groupes, mots-clés, annonces (avec nombre de caractères), négatifs, extensions, onglet d'import Editor |
 | `1-campagnes.csv` | 2 campagnes Search, CPC manuel, budgets |
