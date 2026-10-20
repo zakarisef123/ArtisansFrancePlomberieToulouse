@@ -537,6 +537,13 @@ details.ag[open] > summary::before { content: "▾"; }
         page = page.replace("@@%s@@" % k, str(v))
     with open(os.path.join(OUT, "copier-coller.html"), "w", encoding="utf-8") as f:
         f.write(page)
+    # Version autonome à télécharger et ouvrir dans un navigateur
+    standalone = ('<!DOCTYPE html>\n<html lang="fr">\n<head>\n<meta charset="utf-8">\n'
+                  '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+                  + page.replace("<div class=\"wrap\">", "</head>\n<body>\n<div class=\"wrap\">", 1)
+                  + "</body>\n</html>\n")
+    with open(os.path.join(OUT, "CAMPAGNE-COPIER-COLLER.html"), "w", encoding="utf-8") as f:
+        f.write(standalone)
 
 
 def write_single_import(groups):
