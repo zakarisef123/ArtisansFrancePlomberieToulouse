@@ -20,6 +20,17 @@ TEL = SITE["phone_e164"]
 TEL_D = SITE["phone_display"]
 TODAY = datetime.date.today().isoformat()
 
+
+def asset_version(name):
+    """Empreinte du fichier : change à chaque modification, ce qui force les
+    navigateurs à recharger le CSS/JS au lieu d'utiliser une ancienne version en cache."""
+    with open(os.path.join(ROOT, "assets", name), "rb") as f:
+        return hashlib.md5(f.read()).hexdigest()[:10]
+
+
+CSS_URL = "/assets/style.css?v=" + asset_version("style.css")
+JS_URL = "/assets/main.js?v=" + asset_version("main.js")
+
 SERVICE = {s["slug"]: s for s in SERVICES}
 
 PHONE_SVG = '<path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path>'
@@ -110,7 +121,7 @@ def head(title, desc, canonical, og_image, jsonld, robots="index, follow, max-im
     <meta property="og:url" content="{canonical}">
     <meta property="og:image" content="{og_image}">
     <meta name="twitter:card" content="summary_large_image">
-    <link rel="stylesheet" href="/assets/style.css">
+    <link rel="stylesheet" href="{CSS_URL}">
 {blocks}
 </head>
 <body>
@@ -126,7 +137,7 @@ HEADER = f"""
                 <span class="brand-mark" aria-hidden="true"><img src="/images/logo.png" alt="" width="163" height="240"></span>
                 <span class="brand-text">
                     <span class="brand-name">Artisans <em>France</em> Plomberie</span>
-                    <span class="brand-tagline">Plombier Urgence Toulouse · Haute-Garonne</span>
+                    <span class="brand-tagline">Plombier Urgence Toulouse · Blagnac · Colomiers</span>
                 </span>
             </a>
             <nav class="main-nav" aria-label="Navigation principale">
@@ -265,7 +276,7 @@ def footer():
             <button type="button" class="cmp-btn cmp-save" id="cmp-save" style="display:none;">Enregistrer mes choix</button>
         </div>
     </div>
-    <script src="/assets/main.js" defer></script>
+    <script src="{JS_URL}" defer></script>
 </body>
 </html>
 """
@@ -626,6 +637,15 @@ def main():
     write("mentions-legales", simple_page("mentions-legales", "Mentions légales – Artisans France Plomberie", "Mentions légales du site Artisans France Plomberie Toulouse.", "Mentions légales", MENTIONS))
     write("politique-de-confidentialite", simple_page("politique-de-confidentialite", "Politique de confidentialité – Artisans France Plomberie", "Politique de confidentialité et cookies du site Artisans France Plomberie Toulouse.", "Politique de confidentialité", PRIVACY))
     pages += [("mentions-legales", "0.2"), ("politique-de-confidentialite", "0.2")]
+    # Page d'accueil (éditée à la main) : met à jour les versions du CSS/JS
+    import re
+    p = os.path.join(ROOT, "index.html")
+    with open(p, encoding="utf-8") as f:
+        home = f.read()
+    home = re.sub(r'href="/assets/style\.css(\?v=[0-9a-f]+)?"', 'href="%s"' % CSS_URL, home)
+    home = re.sub(r'src="/assets/main\.js(\?v=[0-9a-f]+)?"', 'src="%s"' % JS_URL, home)
+    with open(p, "w", encoding="utf-8") as f:
+        f.write(home)
     with open(os.path.join(ROOT, "404.html"), "w", encoding="utf-8") as f:
         f.write(simple_page("", "Page introuvable – Artisans France Plomberie", "Page introuvable.", "Page introuvable",
                             '<p>Cette page n\'existe pas ou a été déplacée. Pour une urgence plomberie, appelez directement le <a href="tel:%s">%s</a> ou consultez nos <a href="/zones-intervention/">zones d\'intervention</a>.</p>' % (TEL, TEL_D), "noindex, follow"))

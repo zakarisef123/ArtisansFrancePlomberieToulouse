@@ -5,6 +5,7 @@ Ce dossier n'est **pas publié** sur le site (bloqué dans `netlify.toml` et `ro
 
 | Fichier | Contenu |
 |---|---|
+| **`CREER-LA-CAMPAGNE-import-google-ads-editor.csv`** | **Le fichier unique pour créer la campagne** : campagnes, groupes, mots-clés, annonces et négatifs en un seul import |
 | `campagne-google-ads-plombier-toulouse.xlsx` | **Tout en un classeur Excel** : résumé des réglages, groupes, mots-clés, annonces (avec nombre de caractères), négatifs, extensions, onglet d'import Editor |
 | `1-campagnes.csv` | 2 campagnes Search, CPC manuel, budgets |
 | `2-mots-cles.csv` | 933 mots-clés en **exact** et **expression** avec enchère et URL finale |
@@ -91,6 +92,10 @@ Le site envoie aujourd'hui **la même conversion** (`AW-18317420737/2JlZCOOYyfkc
 ---
 
 ## 5. Importer dans Google Ads Editor
+
+**Méthode rapide (1 seul fichier)** : Google Ads Editor > **Compte > Importer > Depuis un fichier** > choisir `CREER-LA-CAMPAGNE-import-google-ads-editor.csv` > **Traiter** > **Terminer et vérifier les modifications** > **Conserver**. Réglez ensuite à la main la **zone** (Toulouse + 25 km, option « Présence »), les **ajustements appareils et horaires** et les **composants** (§ 2 et § 3), puis **Publier**.
+
+**Méthode détaillée (fichier par fichier)** :
 
 1. Ouvrez **Google Ads Editor**, téléchargez votre compte.
 2. Créez les 2 campagnes avec les paramètres du § 2 (ou importez `1-campagnes.csv`, puis vérifiez zones et réseaux).
