@@ -327,7 +327,52 @@ def main():
     w("6-composants-extensions.csv", ["Type", "Campaign", "Texte", "Ligne 1", "Ligne 2", "URL / Option"], rows)
 
     write_xlsx(groups, n_kw)
+    write_single_import(groups)
     print("%d groupes d'annonces, %d mots-clés, %d négatifs : OK (limites de caractères vérifiées)" % (len(groups), n_kw, len(NEGATIVES)))
+
+
+def write_single_import(groups):
+    """Un seul fichier qui crée toute la campagne dans Google Ads Editor
+    (Compte > Importer > Depuis un fichier) : campagnes, groupes, mots-clés,
+    annonces responsives et mots-clés négatifs."""
+    cols = ["Campaign", "Campaign Type", "Networks", "Budget", "Budget type", "Bid Strategy Type", "Languages", "Campaign Status",
+            "Ad Group", "Max CPC", "Ad Group Status", "Keyword", "Criterion Type", "Status", "Ad type"] + \
+           ["Headline %d" % i for i in range(1, 16)] + ["Headline 1 position"] + ["Description %d" % i for i in range(1, 5)] + \
+           ["Path 1", "Path 2", "Final URL"]
+    idx = {c: i for i, c in enumerate(cols)}
+
+    def row(**kw):
+        r = [""] * len(cols)
+        for k, v in kw.items():
+            r[idx[k.replace("_", " ")]] = v
+        return r
+
+    rows = []
+    for camp, budget in ((C1, "50.00"), (C2, "20.00")):
+        rows.append(row(Campaign=camp, Campaign_Type="Search", Networks="Google search", Budget=budget, Budget_type="Daily",
+                        Bid_Strategy_Type="Manual CPC", Languages="fr", Campaign_Status="Paused"))
+    for g in groups:
+        rows.append(row(Campaign=g[0], Ad_Group=g[1], Max_CPC="%.2f" % g[3], Ad_Group_Status="Enabled"))
+    for camp, name, url, bex, bph, kws, *_ in groups:
+        for k in kws:
+            rows.append(row(Campaign=camp, Ad_Group=name, Keyword=k, Criterion_Type="Exact", Max_CPC="%.2f" % bex, Status="Enabled", Final_URL=BASE + url))
+            if bph:
+                rows.append(row(Campaign=camp, Ad_Group=name, Keyword=k, Criterion_Type="Phrase", Max_CPC="%.2f" % bph, Status="Enabled", Final_URL=BASE + url))
+    for camp, name, url, bex, bph, kws, heads, descs, p1, p2 in groups:
+        r = row(Campaign=camp, Ad_Group=name, Ad_type="Responsive search ad", Status="Enabled", Path_1=p1, Path_2=p2, Final_URL=BASE + url)
+        for i, h in enumerate(heads, 1):
+            r[idx["Headline %d" % i]] = h
+        r[idx["Headline 1 position"]] = "1"
+        for i, d in enumerate(descs, 1):
+            r[idx["Description %d" % i]] = d
+        rows.append(r)
+    for camp in (C1, C2):
+        for n in NEGATIVES:
+            rows.append(row(Campaign=camp, Keyword=n, Criterion_Type="Campaign Negative Phrase"))
+    with open(os.path.join(OUT, "CREER-LA-CAMPAGNE-import-google-ads-editor.csv"), "w", encoding="utf-8-sig", newline="") as f:
+        wr = csv.writer(f)
+        wr.writerow(cols)
+        wr.writerows(rows)
 
 
 def write_xlsx(groups, n_kw):
